@@ -1,14 +1,13 @@
 import express from "express";
-import User from "../models/user.model";
+import User from "../models/userModel.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import Passport from "../config/passport";
+import dotenv from 'dotenv';
 
-require('dotenv').config();
-
+dotenv.config();
 const router = express.Router();
 
-//user registration route
+// User registration route
 router.post('/register', async (req, res) => {
     try {
         const { username, email, password } = req.body;
@@ -17,7 +16,7 @@ router.post('/register', async (req, res) => {
         const emailExists = await User.findOne({ email });
 
         if (userNameExists || emailExists) {
-            return res.status(400).json({ error: "username or email already exists" });
+            return res.status(400).json({ error: "Username or email already exists" });
         }
 
         const hashedPassword = await bcrypt.hash(password, 10);
@@ -30,25 +29,19 @@ router.post('/register', async (req, res) => {
 
         await newUser.save();
 
-        const token = jwt.sign({
-            userId: newUser._id
-        }, process.env.SECRET_KEY, {
+        const token = jwt.sign({ userId: newUser._id }, process.env.SECRET_KEY, {
             expiresIn: '1h'
         });
 
-        res.json({
-            token,
-            username: newUser.username
-        });
+        res.json({ token, username: newUser.username });
 
     } catch (error) {
-        console.log(error);
-        res.status(500).json({ error: 'registration failed' });
+        console.error(error);
+        res.status(500).json({ error: 'Registration failed' });
     }
 });
 
-//user login route
-
+// User login route
 router.post('/login', async (req, res) => {
     try {
         const { username, password } = req.body;
@@ -60,25 +53,24 @@ router.post('/login', async (req, res) => {
 
         const isValidPassword = await bcrypt.compare(password, user.password);
         if (!isValidPassword) {
-            return res.status(401).json({ message: 'Invalid Password' });
+            return res.status(401).json({ message: 'Invalid password' });
         }
 
-        //jwt token
         const token = jwt.sign({ userId: user._id }, process.env.SECRET_KEY, {
             expiresIn: '1h'
         });
 
         res.status(200).json({ token });
     } catch (error) {
-        res.status(500).json({ message: 'Login failed' })
+        console.error(error);
+        res.status(500).json({ message: 'Login failed' });
     }
 });
 
-//token verification route
-
+// Token verification route
 router.get('/verify', async (req, res) => {
     try {
-        const token = req.headers.authorizaton?.split(' ')[1];
+        const token = req.headers.authorization?.split(' ')[1];
         if (!token) {
             return res.status(401).json({ message: 'No token provided' });
         }
@@ -92,6 +84,11 @@ router.get('/verify', async (req, res) => {
 
         res.status(200).json(user);
     } catch (error) {
+        if (error.name === 'TokenExpiredError') {
+            return res.status(401).json({ message: 'Token expired' });
+        } else if (error.name === 'JsonWebTokenError') {
+            return res.status(401).json({ message: 'Invalid token' });
+        }
         res.status(500).json({ message: 'Token verification failed' });
     }
 });

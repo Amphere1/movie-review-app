@@ -1,30 +1,33 @@
-import passport, { use } from "passport";
-import LocalStrategy from "passport-local";
-import User from "../models/user.model";
+import passport from "passport";
+import { Strategy as LocalStrategy } from "passport-local";
+import bcrypt from "bcrypt";
+import User from "../models/userModel.js";
 
-
-passport.use(new LocalStrategy({
-    usernameField: 'username',
-    passwordField: 'password'
-},
+passport.use(
+  new LocalStrategy(
+    {
+      usernameField: "username",
+      passwordField: "password",
+    },
     async (username, password, done) => {
-        try {
-            const user = await User.findOne({ username: username });
+      try {
+        const user = await User.findOne({ username });
 
-            if (!user) {
-                return done(null, false, { message: 'Incorrect username.' });
-            }
-
-            const isValidPassword = await bcrypt.compare(password, User.password);
-            if (!isValidPassword) {
-                return done(null, false, { message: 'Incorrect password.' });
-            }
-
-            return done(null, user);
-        } catch (error) {
-            return done(error);
+        if (!user) {
+          return done(null, false, { message: "Incorrect username." });
         }
-    }
-));
 
-export default Passport;
+        const isValidPassword = await bcrypt.compare(password, user.password);
+        if (!isValidPassword) {
+          return done(null, false, { message: "Incorrect password." });
+        }
+
+        return done(null, user);
+      } catch (error) {
+        return done(error);
+      }
+    }
+  )
+);
+
+export default passport;
