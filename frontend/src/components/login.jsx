@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import axios from "axios";
 
-function Login({ onLogin }) {
+const Login = ({ onLogin }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState(null);
@@ -57,6 +57,6 @@ function Login({ onLogin }) {
       <button type="submit">Login</button>
     </form>
   );
-}
+};
 
 export default Login;
