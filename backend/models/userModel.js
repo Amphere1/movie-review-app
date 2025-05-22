@@ -32,18 +32,7 @@ const userSchema = new mongoose.Schema({
     }
 });
 
-userSchema.pre('save', async function (next) {
-    const user = this;
-    if(user.isModified('password')) {
-        user.password = await bcrypt.hash(user.password, 10);
-    }
-    next(); 
-});
 
-userSchema.methods.comparePassword = async (password) => {
-    const isMatch = await bcrypt.compare(password, this.password);
-    return isMatch;
-};
 
 const User = mongoose.model('User', userSchema);
 
