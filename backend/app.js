@@ -3,42 +3,60 @@ import mongoose from "mongoose";
 import passport from "passport";
 import dotenv from "dotenv";
 import authRoutes from './routes/auth.js';
-import "./config/passport.js"; // just to ensure strategy gets registered
+import "./config/passport.js";
 import cors from 'cors';
+import { searchMovies } from './services/tmdbService.js';
+import verifyToken from './middleware/auth.js';
 
 dotenv.config();
 
 const app = express();
-const tmdbService = require('./services/tmdbService.js');
 
+// CORS configuration
 const corsOptions = {
     origin: [
-        'http://localhost:3000',  // React default
-        'http://localhost:5173',  // Vite default
-        'http://127.0.0.1:5173',  // Alternative localhost
-        'http://localhost:4173',  // Vite preview
+        'http://localhost:3000',
+        'http://localhost:5173',
+        'http://127.0.0.1:5173',
+        'http://localhost:4173',
     ],
-    credentials: true, // Allow cookies/auth headers
+    credentials: true,
     optionsSuccessStatus: 200,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: [
-        'Origin',
-        'X-Requested-With',
-        'Content-Type',
-        'Accept',
-        'Authorization',
-        'Cache-Control'
-    ]
+    allowedHeaders: ['Origin', 'X-Requested-With', 'Content-Type', 'Accept', 'Authorization']
 };
 
 // Apply middlewares in correct order
-app.use(cors(corsOptions));  // CORS should be first
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(passport.initialize());
 
-// Routes come after all middleware
+// Auth routes
 app.use('/api/auth', authRoutes);
+
+// Protected search route
+app.get('/api/search', verifyToken, async (req, res) => {
+    try {
+        const query = req.query.q;
+        
+        if (!query) {
+            return res.status(400).json({ message: 'Search query is required' });
+        }
+
+        console.log('Searching movies with query:', query);
+        const results = await searchMovies(query);
+        console.log('Found results:', results.total_results);
+        
+        res.json(results);
+    } catch (error) {
+        console.error('Search error:', error);
+        res.status(500).json({ 
+            message: 'Failed to search movies',
+            error: error.message 
+        });
+    }
+});
 
 mongoose.connect(process.env.MONGODB_URI, {
     useNewUrlParser: true,
@@ -48,39 +66,6 @@ mongoose.connect(process.env.MONGODB_URI, {
     .catch(error => console.error('MongoDB connection error:', error));
 
 const PORT = process.env.PORT || 5000;
-
-//movie fetching routes
-
-app.get('/search', async (req, res) => {
-    try {
-        const query = req.query.q;
-        const page = req.query.page;
-
-        const results = await tmdbService.searchMovies(query, { page });
-        res.json(results);
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-});
-
-app.get('/movies/:id', async (req, res) => {
-    try {
-        const movieId = req.params.id;
-        const details = await tmdbService.movieDetails(movieId);
-        res.json(details);
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-});
-
-
-// Error handling middleware
-app.use((err, req, res, next) => {
-    console.error(err.stack);
-    res.status(500).json({ error: 'Something went wrong!' });
-});
-
-
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
 });

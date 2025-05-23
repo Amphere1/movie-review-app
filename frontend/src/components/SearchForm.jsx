@@ -16,14 +16,40 @@ const SearchForm = () => {
     setError(null);
 
     try {
-      const API_KEY = import.meta.env.VITE_TMDB_API_KEY;
-      const url = `https://api.themoviedb.org/3/search/movie?api_key=${API_KEY}&query=${term}`;
+      const token = localStorage.getItem("movieReviewToken");
+      console.log("Making search request with term:", term);
 
-      const response = await axios.get(url);
-      setSearchResults(response.data.results);
+      const response = await axios.get(`http://localhost:5000/api/search`, {
+        params: { q: term },
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      console.log("Search response:", response.data);
+
+      if (response.data && response.data.results) {
+        setSearchResults(response.data.results);
+      } else {
+        setSearchResults([]);
+      }
     } catch (error) {
-      console.log(error);
-      setError("Failed to fetch search results. Please try again.");
+      console.error("Search error:", {
+        message: error.message,
+        response: error.response?.data,
+        status: error.response?.status,
+      });
+
+      if (error.response?.status === 401) {
+        setError("Please login again to continue searching.");
+        localStorage.removeItem("movieReviewToken");
+      } else {
+        setError(
+          error.response?.data?.message ||
+            "Failed to fetch search results. Please try again."
+        );
+      }
     } finally {
       setIsLoading(false);
     }

@@ -4,6 +4,7 @@ import { BrowserRouter as Router } from 'react-router-dom'
 import Login from './components/login'
 import Logout from './components/logout'
 import Navigation from './components/Navigation'
+import SearchForm from './components/SearchForm'
 
 function App() {
   const [token, setToken] = useState(null);
@@ -21,6 +22,7 @@ function App() {
 
   const handleLogout = () => {
     setToken(null);
+    localStorage.removeItem('movieReviewToken');
   };
 
   return(
@@ -29,11 +31,15 @@ function App() {
         <Navigation/>
         <div className='container mx-auto px-4 py-8'>
           {token ? (
-            <Logout onLogout={handleLogout}/>
-          ): (
+            <>
+              <div className="flex justify-end mb-6">
+                <Logout onLogout={handleLogout}/>
+              </div>
+              <SearchForm/>
+            </>
+          ) : (
             <Login onLogin={handleLogin}/>
           )}
-          {/* movie related components will be added here */}
         </div>
       </div>
     </Router>

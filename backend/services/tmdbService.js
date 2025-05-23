@@ -1,27 +1,25 @@
 import axios from 'axios';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 const TMDB_API_KEY = process.env.TMDB_API_KEY;
 const TMDB_BASE_URL = 'https://api.themoviedb.org/3';
 
-const tmdbClient = axios.create({
-    baseURL: TMDB_BASE_URL,
-    headers: {
-        'Authorization': `Bearer ${TMDB_API_KEY}`,
-        'Content-Type': 'application/json'
-    }
-});
-
 async function searchMovies(query, options = {}) {
     try {
         const params = {
+            api_key: TMDB_API_KEY,
             query: query,
             page: options.page || 1,
-            year: options.year
+            language: 'en-US',
+            include_adult: false
         };
 
-        const response = await tmdbClient.get('/search/movie', { params });
+        const response = await axios.get(`${TMDB_BASE_URL}/search/movie`, { params });
         return response.data;
     } catch (error) {
+        console.error('TMDB API Error:', error.response?.data || error.message);
         throw new Error(`Failed to search movies: ${error.message}`);
     }
 }
