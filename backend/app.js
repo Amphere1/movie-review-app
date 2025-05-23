@@ -9,6 +9,7 @@ import cors from 'cors';
 dotenv.config();
 
 const app = express();
+const tmdbService = require('./services/tmdbService.js');
 
 const corsOptions = {
     origin: [
@@ -47,6 +48,39 @@ mongoose.connect(process.env.MONGODB_URI, {
     .catch(error => console.error('MongoDB connection error:', error));
 
 const PORT = process.env.PORT || 5000;
+
+//movie fetching routes
+
+app.get('/search', async (req, res) => {
+    try {
+        const query = req.query.q;
+        const page = req.query.page;
+
+        const results = await tmdbService.searchMovies(query, { page });
+        res.json(results);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+app.get('/movies/:id', async (req, res) => {
+    try {
+        const movieId = req.params.id;
+        const details = await tmdbService.movieDetails(movieId);
+        res.json(details);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+
+// Error handling middleware
+app.use((err, req, res, next) => {
+    console.error(err.stack);
+    res.status(500).json({ error: 'Something went wrong!' });
+});
+
+
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
 });
