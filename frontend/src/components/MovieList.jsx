@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 import MovieCard from './MovieCard';
+import config from '../config';
 
 const MovieList = ({ category }) => {
     const [movies, setMovies] = useState([]);
@@ -15,9 +16,8 @@ const MovieList = ({ category }) => {
 
     // Create axios instance with interceptors
     useEffect(() => {
-        const token = localStorage.getItem('movieReviewToken');
-        axiosRef.current = axios.create({
-            baseURL: 'http://localhost:5000',
+        const token = localStorage.getItem('movieReviewToken');        axiosRef.current = axios.create({
+            baseURL: config.apiUrl,
             headers: { Authorization: `Bearer ${token}` }
         });
 

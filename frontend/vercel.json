@@ -1,0 +1,25 @@
+{
+    "rewrites": [
+        {
+            "source": "/api/:path*",
+            "destination": "https://movie-review-app-backend.vercel.app/api/:path*"
+        }
+    ],
+    "build": {
+        "env": {
+            "VITE_API_URL": "https://movie-review-app-backend.vercel.app",
+            "VITE_TMDB_API_KEY": "07ff0292cde80885ece87e42130f6a94"
+        }
+    },
+    "headers": [
+        {
+            "source": "/(.*)",
+            "headers": [
+                {
+                    "key": "Access-Control-Allow-Origin",
+                    "value": "*"
+                }
+            ]
+        }
+    ]
+}
