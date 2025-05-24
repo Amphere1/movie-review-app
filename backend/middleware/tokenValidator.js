@@ -5,7 +5,7 @@ dotenv.config();
 
 const validateToken = (token) => {
     try {
-        return jwt.verify(token, process.env.SECRET_KEY);
+        return jwt.verify(token, process.env.VITE_SECRET_KEY);
     } catch (error) {
         return null;
     }
