@@ -12,58 +12,94 @@ router.post('/register', async (req, res) => {
     try {
         const { username, email, password } = req.body;
 
-        const userNameExists = await User.findOne({ username });
-        const emailExists = await User.findOne({ email });
+        // Check if user already exists
+        const existingUser = await User.findOne({
+            $or: [{ email }, { username }]
+        });
 
-        if (userNameExists || emailExists) {
-            return res.status(400).json({ error: "Username or email already exists" });
+        if (existingUser) {
+            return res.status(400).json({
+                message: existingUser.email === email
+                    ? 'Email already registered'
+                    : 'Username already taken'
+            });
         }
 
-        const hashedPassword = await bcrypt.hash(password, 12);
+        // Hash password
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(password, salt);
 
-        const newUser = new User({
+        // Create new user
+        const user = new User({
             username,
             email,
             password: hashedPassword
-        });
+        });        await user.save();
 
-        await newUser.save();
+        // Create and sign JWT
+        const token = jwt.sign(
+            {
+                _id: user._id,
+                username: user.username,
+                email: user.email
+            },
+            process.env.SECRET_KEY,
+            { expiresIn: '24h' }
+        );
 
-        const token = jwt.sign({ userId: newUser._id }, process.env.SECRET_KEY, {
-            expiresIn: '1h'
-        });
-
-        res.json({ token, username: newUser.username });
-
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: 'Registration failed' });
+        res.status(201).json({
+    token,
+    user: {
+        _id: user._id,
+        username: user.username,
+        email: user.email
     }
+});
+    } catch (error) {
+    res.status(500).json({ message: error.message });
+}
 });
 
 // User login route
 router.post('/login', async (req, res) => {
     try {
-        const { username, password } = req.body;
+        const { email, password } = req.body;
 
-        const user = await User.findOne({ username });
+        if (!email || !password) {
+            return res.status(400).json({ message: 'Email and password are required' });
+        }
+
+        // Find user
+        const user = await User.findOne({ email: email.toLowerCase() });
         if (!user) {
-            return res.status(401).json({ message: 'User not found' });
+            return res.status(400).json({ message: 'Invalid email or password' });
         }
 
-        const isValidPassword = await bcrypt.compare(password, user.password);
-        if (!isValidPassword) {
-            return res.status(401).json({ message: 'Invalid password' });
-        }
+        // Check password
+        const validPassword = await bcrypt.compare(password, user.password);
+        if (!validPassword) {
+            return res.status(400).json({ message: 'Invalid email or password' });
+        }        // Create and sign JWT with user role
+        const token = jwt.sign(
+            {
+                _id: user._id,
+                username: user.username,
+                email: user.email
+            },
+            process.env.SECRET_KEY,
+            { expiresIn: '24h' }
+        );
 
-        const token = jwt.sign({ userId: user._id }, process.env.SECRET_KEY, {
-            expiresIn: '1h'
+        res.json({
+            token,
+            user: {
+                _id: user._id,
+                username: user.username,
+                email: user.email
+            }
         });
-
-        res.status(200).json({ token });
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Login failed' });
+        res.status(500).json({ message: error.message });
     }
 });
 
@@ -73,10 +109,8 @@ router.get('/verify', async (req, res) => {
         const token = req.headers.authorization?.split(' ')[1];
         if (!token) {
             return res.status(401).json({ message: 'No token provided' });
-        }
-
-        const decoded = jwt.verify(token, process.env.SECRET_KEY);
-        const user = await User.findById(decoded.userId).select('-password');
+        }        const decoded = jwt.verify(token, process.env.SECRET_KEY);
+        const user = await User.findById(decoded._id).select('-password');
 
         if (!user) {
             return res.status(404).json({ message: 'User not found' });

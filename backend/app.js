@@ -3,9 +3,10 @@ import mongoose from "mongoose";
 import passport from "passport";
 import dotenv from "dotenv";
 import authRoutes from './routes/auth.js';
+import movieListRoutes from './routes/movieList.js';
 import "./config/passport.js";
 import cors from 'cors';
-import { searchMovies } from './services/tmdbService.js';
+import { searchMovies, getGenres } from './services/tmdbService.js';
 import verifyToken from './middleware/auth.js';
 
 dotenv.config();
@@ -34,18 +35,24 @@ app.use(passport.initialize());
 
 // Auth routes
 app.use('/api/auth', authRoutes);
+app.use('/api/movielist', movieListRoutes);
 
 // Protected search route
 app.get('/api/search', verifyToken, async (req, res) => {
     try {
-        const query = req.query.q;
+        const { q: query, year, genres } = req.query;
         
         if (!query) {
             return res.status(400).json({ message: 'Search query is required' });
         }
 
-        console.log('Searching movies with query:', query);
-        const results = await searchMovies(query);
+        const options = {
+            year: year ? parseInt(year) : undefined,
+            genres: genres ? genres.split(',').map(g => parseInt(g)) : undefined
+        };
+
+        console.log('Searching movies with query:', query, 'options:', options);
+        const results = await searchMovies(query, options);
         console.log('Found results:', results.total_results);
         
         res.json(results);
@@ -53,6 +60,20 @@ app.get('/api/search', verifyToken, async (req, res) => {
         console.error('Search error:', error);
         res.status(500).json({ 
             message: 'Failed to search movies',
+            error: error.message 
+        });
+    }
+});
+
+// Get genres route
+app.get('/api/search/genres', verifyToken, async (req, res) => {
+    try {
+        const genres = await getGenres();
+        res.json(genres);
+    } catch (error) {
+        console.error('Failed to fetch genres:', error);
+        res.status(500).json({ 
+            message: 'Failed to fetch genres',
             error: error.message 
         });
     }

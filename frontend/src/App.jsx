@@ -1,10 +1,12 @@
 import './App.css'
 import React, {useState, useEffect} from 'react'
-import { BrowserRouter as Router } from 'react-router-dom'
-import Login from './components/login'
-import Logout from './components/logout'
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
+import Login from './components/Login'
+import Logout from './components/Logout'
 import Navigation from './components/Navigation'
 import SearchForm from './components/SearchForm'
+import MovieList from './components/MovieList'
+import Register from './components/Register'
 
 function App() {
   const [token, setToken] = useState(null);
@@ -27,7 +29,7 @@ function App() {
 
   return(
     <Router>
-      <div className='min-h-screen bg-gray-100'>
+      <div className='min-h-screen bg-zinc-900'>
         <Navigation/>
         <div className='container mx-auto px-4 py-8'>
           {token ? (
@@ -35,10 +37,20 @@ function App() {
               <div className="flex justify-end mb-6">
                 <Logout onLogout={handleLogout}/>
               </div>
-              <SearchForm/>
+              <Routes>
+                <Route path="/" element={<SearchForm />} />
+                <Route path="/search" element={<SearchForm />} />
+                <Route path="/to-watch" element={<MovieList category="toWatch" />} />
+                <Route path="/watched" element={<MovieList category="watched" />} />
+                <Route path="/favorites" element={<MovieList category="favorite" />} />
+                <Route path="*" element={<Navigate to="/" replace />} />
+              </Routes>
             </>
           ) : (
-            <Login onLogin={handleLogin}/>
+            <Routes>
+              <Route path="/register" element={<Register />} />
+              <Route path="*" element={<Login onLogin={handleLogin} />} />
+            </Routes>
           )}
         </div>
       </div>

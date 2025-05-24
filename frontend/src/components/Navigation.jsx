@@ -43,20 +43,31 @@ const Navigation = () => {
               className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium"
             >
               Home
-            </Link>
-            <Link
-              to="/movies"
+            </Link>            <Link
+              to="/search"
               className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium"
             >
-              Movies
+              Search
             </Link>
             {isLoggedIn ? (
               <>
                 <Link
-                  to="/my-reviews"
+                  to="/to-watch"
                   className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium"
                 >
-                  My Reviews
+                  Watch Later
+                </Link>
+                <Link
+                  to="/watched"
+                  className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium"
+                >
+                  Watched
+                </Link>
+                <Link
+                  to="/favorites"
+                  className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium"
+                >
+                  Favorites
                 </Link>
                 <div className="flex items-center space-x-4">
                   <span className="text-gray-300 text-sm">
@@ -131,22 +142,35 @@ const Navigation = () => {
               onClick={() => setIsMobileMenuOpen(false)}
             >
               Home
-            </Link>
-            <Link
-              to="/movies"
+            </Link>            <Link
+              to="/search"
               className="text-gray-300 hover:text-white block px-3 py-2 rounded-md text-base font-medium"
               onClick={() => setIsMobileMenuOpen(false)}
             >
-              Movies
+              Search
             </Link>
             {isLoggedIn ? (
               <>
                 <Link
-                  to="/my-reviews"
+                  to="/to-watch"
                   className="text-gray-300 hover:text-white block px-3 py-2 rounded-md text-base font-medium"
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
-                  My Reviews
+                  Watch Later
+                </Link>
+                <Link
+                  to="/watched"
+                  className="text-gray-300 hover:text-white block px-3 py-2 rounded-md text-base font-medium"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  Watched
+                </Link>
+                <Link
+                  to="/favorites"
+                  className="text-gray-300 hover:text-white block px-3 py-2 rounded-md text-base font-medium"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  Favorites
                 </Link>
                 <div className="px-3 py-2">
                   <span className="text-gray-300 text-sm block mb-2">
