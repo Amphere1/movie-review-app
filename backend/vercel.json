@@ -8,13 +8,23 @@
     ],
     "routes": [
         {
-            "src": "/(.*)",
+            "src": "/api/(.*)",
             "dest": "app.js"
+        },
+        {
+            "src": "/(.*)",
+            "dest": "app.js",
+            "headers": {
+                "Access-Control-Allow-Credentials": "true",
+                "Access-Control-Allow-Origin": "*",
+                "Access-Control-Allow-Methods": "GET,OPTIONS,PATCH,DELETE,POST,PUT",
+                "Access-Control-Allow-Headers": "X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Authorization"
+            }
         }
     ],
     "env": {
-        "MONGODB_URI": "@mongodb_uri",
-        "SECRET_KEY": "@secret_key",
-        "TMDB_API_KEY": "@tmdb_api_key"
+        "MONGODB_URI": "$MONGODB_URI",
+        "SECRET_KEY": "$SECRET_KEY",
+        "TMDB_API_KEY": "$TMDB_API_KEY"
     }
 }

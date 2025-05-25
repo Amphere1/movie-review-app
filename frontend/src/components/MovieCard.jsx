@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import axios from 'axios';
+import api from '../services/api';
 
 const MovieCard = ({ movie, onUpdate, inUserList }) => {
     const [isExpanded, setIsExpanded] = useState(false);
@@ -7,20 +7,15 @@ const MovieCard = ({ movie, onUpdate, inUserList }) => {
     const [review, setReview] = useState('');
     const [tags, setTags] = useState('');
     const [loading, setLoading] = useState(false);
-    const [error, setError] = useState(null);
-
-    const handleAddToList = async (category) => {
+    const [error, setError] = useState(null);    const handleAddToList = async (category) => {
         setLoading(true);
         setError(null);
         try {
-            const token = localStorage.getItem('movieReviewToken');
-            await axios.post('http://localhost:5000/api/movielist/add', {
+            await api.post('/api/movielist/add', {
                 movieId: movie.id.toString(),
                 title: movie.title,
                 posterPath: movie.poster_path,
                 category
-            }, {
-                headers: { Authorization: `Bearer ${token}` }
             });
             if (onUpdate) onUpdate();
         } catch (err) {
@@ -28,20 +23,15 @@ const MovieCard = ({ movie, onUpdate, inUserList }) => {
         } finally {
             setLoading(false);
         }
-    };
-
-    const handleUpdateMovie = async (category) => {
+    };    const handleUpdateMovie = async (category) => {
         setLoading(true);
         setError(null);
         try {
-            const token = localStorage.getItem('movieReviewToken');
-            await axios.patch(`http://localhost:5000/api/movielist/${movie.id}`, {
+            await api.patch(`/api/movielist/${movie.id}`, {
                 category,
                 rating: rating || undefined,
                 review: review || undefined,
                 tags: tags ? tags.split(',').map(t => t.trim()) : undefined
-            }, {
-                headers: { Authorization: `Bearer ${token}` }
             });
             if (onUpdate) onUpdate();
         } catch (err) {
@@ -49,16 +39,11 @@ const MovieCard = ({ movie, onUpdate, inUserList }) => {
         } finally {
             setLoading(false);
         }
-    };
-
-    const handleRemoveFromList = async () => {
+    };    const handleRemoveFromList = async () => {
         setLoading(true);
         setError(null);
         try {
-            const token = localStorage.getItem('movieReviewToken');
-            await axios.delete(`http://localhost:5000/api/movielist/${movie.id}`, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+            await api.delete(`/api/movielist/${movie.id}`);
             if (onUpdate) onUpdate();
         } catch (err) {
             setError(err.response?.data?.message || 'Failed to remove movie');

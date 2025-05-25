@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import axios from "axios";
+import api from '../services/api';
 import MovieCard from "./MovieCard";
 
 const SearchForm = () => {
@@ -19,12 +19,7 @@ const SearchForm = () => {
     // Fetch user's movie list
     const fetchUserMovies = async () => {
       try {
-        const token = localStorage.getItem("movieReviewToken");
-        if (!token) return;
-
-        const response = await axios.get("http://localhost:5000/api/movielist", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const response = await api.get("/api/movielist");
         setUserMovieList(response.data);
       } catch (error) {
         console.error("Failed to fetch user movies:", error);
@@ -34,13 +29,7 @@ const SearchForm = () => {
     // Fetch genres
     const fetchGenres = async () => {
       try {
-        const token = localStorage.getItem("movieReviewToken");
-        const response = await axios.get(
-          "http://localhost:5000/api/search/genres",
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
+        const response = await api.get("/api/search/genres");
         setGenres(response.data.genres);
       } catch (error) {
         console.error("Failed to fetch genres:", error);
@@ -58,19 +47,13 @@ const SearchForm = () => {
     setError(null);
 
     try {
-      const token = localStorage.getItem("movieReviewToken");
-
-      const response = await axios.get(`http://localhost:5000/api/search`, {
+      const response = await api.get(`/api/search`, {
         params: {
           q: term,
           year: yearFilter,
           genres: selectedGenres.join(","),
           category: selectedCategory !== "all" ? selectedCategory : undefined,
-        },
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
+        }
       });
 
       let results = response.data.results || [];
@@ -120,10 +103,7 @@ const SearchForm = () => {
     // Refresh user's movie list after updates
     const fetchUserMovies = async () => {
       try {
-        const token = localStorage.getItem("movieReviewToken");
-        const response = await axios.get("http://localhost:5000/api/movielist", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const response = await api.get("/api/movielist");
         setUserMovieList(response.data);
       } catch (error) {
         console.error("Failed to fetch user movies:", error);

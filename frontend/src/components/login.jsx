@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
-import axios from "axios";
+import api from '../services/api';
 
 const Login = ({ onLogin }) => {  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -12,20 +12,10 @@ const Login = ({ onLogin }) => {  const [email, setEmail] = useState("");
 
     try {
       // Add console.log to debug request payload
-      console.log('Sending login request with:', { email, password });
-
-      const response = await axios.post(
-        "http://localhost:5000/api/auth/login",
-        {
+      console.log('Sending login request with:', { email, password });      const response = await api.post('/api/auth/login', {
           email: email.trim(),
           password: password
-        },
-        {
-          headers: {
-            'Content-Type': 'application/json'
-          }
-        }
-      );      console.log('Server response:', response.data); // Debug response
+      });console.log('Server response:', response.data); // Debug response
 
       const { token, user } = response.data;
       
